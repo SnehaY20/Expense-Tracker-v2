@@ -5,18 +5,20 @@ const CategorySchema = new mongoose.Schema({
     type: String,
     enum: [
       "Food",
-      "Transport",
-      "Utilities",
+      "Travelling",
+      "Shopping",
       "Entertainment",
       "Healthcare",
-      "Other" 
+      "Skincare",
+      "Groceries",
+      "Other",
     ],
     required: [true, "Select category"],
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true,
+    required: false,
   },
 });
 

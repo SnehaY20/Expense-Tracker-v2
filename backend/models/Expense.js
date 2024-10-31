@@ -23,7 +23,6 @@ const ExpenseSchema = new mongoose.Schema({
   },
   note: {
     type: String,
-    required: true,
   },
   createdAt: {
     type: Date,
@@ -32,7 +31,7 @@ const ExpenseSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
-    required: true,
+    required: false,
   },
 });
 
