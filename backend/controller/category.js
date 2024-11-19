@@ -1,18 +1,28 @@
 const Category = require("../models/Category.js");
 const asyncHandler = require("../middleware/async.js");
+const ErrorResponse = require("../utils/errorResponse.js");
 
 // @desc     Create a new category
 // @route    POST /api/v1/categories
-// @access   Private
+// @access   Admin
 exports.createCategory = asyncHandler(async (req, res, next) => {
+  // Only allow admin users
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied: Only admins can create categories",
+    });
+  }
+
   const { name } = req.body;
 
   // Check if category already exists
   const existingCategory = await Category.findOne({ name });
   if (existingCategory) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Category already exists" });
+    return res.status(400).json({
+      success: false,
+      message: "Category already exists",
+    });
   }
 
   // Create the new category
@@ -26,4 +36,26 @@ exports.createCategory = asyncHandler(async (req, res, next) => {
 exports.getCategories = asyncHandler(async (req, res, next) => {
   const categories = await Category.find();
   res.status(200).json({ success: true, count: categories.length, categories });
+});
+
+// @desc     Delete a category
+// @route    DELETE /api/v1/categories/:id
+// @access   Admin
+exports.deleteCategory = asyncHandler(async (req, res, next) => {
+  // Only allow admin users
+  if (req.user.role !== "admin") {
+    return next(
+      new ErrorResponse("Not authorized to delete this category", 401)
+    );
+  }
+
+  const { id } = req.params;
+  const category = await Category.findById(id);
+
+  if (!category) {
+    return next(new ErrorResponse(`Category not found with id of ${id}`));
+  }
+
+  await category.remove();
+  res.status(200).json({ success: true, message: "Category deleted" });
 });
