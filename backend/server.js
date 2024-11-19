@@ -12,6 +12,7 @@ connectDB();
 // Bring in Route files
 const expense = require("./routes/expense.js");
 const category = require("./routes/category.js");
+const auth = require("./routes/auth.js");
 
 const app = express();
 
@@ -32,6 +33,7 @@ if (process.env.NODE_ENV === "development") {
 // Mount routers (path)
 app.use("/api/v1/expenses", expense);
 app.use("/api/v1/categories", category);
+app.use("/api/v1/auth", auth);
 
 app.listen(PORT, () => {
   PORT,
