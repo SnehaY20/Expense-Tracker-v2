@@ -2,6 +2,7 @@ const path = require("path");
 const Expense = require("../models/Expense");
 const Category = require("../models/Category");
 const User = require("../models/User");
+const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async.js");
 
 // @desc     GET all expenses
@@ -83,9 +84,11 @@ exports.updateExpense = asyncHandler(async (req, res, next) => {
   // Check if the expense exists
   let expense = await Expense.findById(id);
   if (!expense) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Expense not found" });
+    return next(new ErrorResponse(`Expense with ID ${id} doesn't exist.`));
+  } else if (expense.user.toString() !== req.user.id) {
+    return next(
+      new ErrorResponse("Not authorized to update this expense", 401)
+    );
   }
 
   // If value is changed then update the new value else it remains unchanged.
@@ -112,9 +115,11 @@ exports.deleteExpense = asyncHandler(async (req, res, next) => {
   // Check if the expense exists
   const expense = await Expense.findById(id);
   if (!expense) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Expense not found" });
+    return next(new ErrorResponse(`Expense with ID ${id} doesn't exist.`));
+  } else if (expense.user.toString() !== req.user.id) {
+    return next(
+      new ErrorResponse("Not authorized to delete this expense", 401)
+    );
   }
 
   // Delete the expense
