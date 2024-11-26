@@ -56,6 +56,8 @@ exports.deleteCategory = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`Category not found with id of ${id}`));
   }
 
-  await category.remove();
+  // Use deleteOne or findByIdAndDelete
+  await Category.findByIdAndDelete(id); // This removes the category
+
   res.status(200).json({ success: true, message: "Category deleted" });
 });

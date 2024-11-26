@@ -16,7 +16,6 @@ exports.protect = asyncHandler(async (req, res, next) => {
     token = req.cookies.token;
   }
 
-  // Make sure token exists
   if (!token) {
     return next(new ErrorResponse("Not authorized to access this route", 401));
   }
@@ -25,19 +24,23 @@ exports.protect = asyncHandler(async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log("Decoded token:", decoded);
+    console.log("Decoded Token Payload:", decoded);
 
+    // Fetch user from the database
     req.user = await User.findById(decoded.id);
 
-    if (req.user === null) {
+    if (!req.user) {
+      console.log("No user found for the given token.");
       return next(
         new ErrorResponse("Not authorized to access this route", 401)
       );
     }
-    console.log("Test", req.user);
+
+    console.log("Authenticated User:", req.user);
 
     next();
   } catch (err) {
+    console.error("Error verifying token:", err.message);
     return next(new ErrorResponse("Not authorized to access this route", 401));
   }
 });
@@ -45,15 +48,22 @@ exports.protect = asyncHandler(async (req, res, next) => {
 // Grant access to specific roles
 exports.authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      console.log("Error verifying token:", err);
+    if (!req.user || !roles.includes(req.user.role)) {
+      console.log(
+        `Authorization failed: User role ${
+          req.user?.role || "undefined"
+        } is not authorized.`
+      );
       return next(
         new ErrorResponse(
-          `User role ${req.user.role} is not authorized to access this route`,
+          `User role ${
+            req.user?.role || "undefined"
+          } is not authorized to access this route`,
           403
         )
       );
     }
+    console.log(`User role ${req.user.role} authorized for this route.`);
     next();
   };
 };

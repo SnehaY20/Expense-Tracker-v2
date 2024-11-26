@@ -1,7 +1,17 @@
 const express = require("express");
-const { createCategory, getCategories } = require("../controller/category");
+const {
+  createCategory,
+  getCategories,
+  deleteCategory,
+} = require("../controller/category");
 const router = express.Router();
 
-router.route("/").post(createCategory).get(getCategories);
+const { protect, authorize } = require("../middleware/auth");
+
+router
+  .route("/")
+  .post(protect, authorize("admin"), createCategory)
+  .get(getCategories);
+router.route("/:id").delete(protect, authorize("admin"), deleteCategory);
 
 module.exports = router;

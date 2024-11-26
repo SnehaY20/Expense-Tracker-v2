@@ -11,15 +11,26 @@ const User = require("../models/User");
 exports.register = asyncHandler(async (req, res, next) => {
   const { name, email, role, password } = req.body;
 
-  // Create user
-  const user = await User.create({
-    name,
-    email,
-    role,
-    password,
-  });
+  try {
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      role,
+      password,
+    });
 
-  sendTokenResponse(user, 200, res);
+    sendTokenResponse(user, 200, res);
+  } catch (err) {
+    // Check for duplicate key error (MongoDB error code 11000)
+    if (err.code === 11000) {
+      return next(
+        new ErrorResponse("User with this email already exists", 400)
+      );
+    }
+    // Pass other errors to the error handler
+    return next(err);
+  }
 });
 
 // Login user
@@ -28,23 +39,20 @@ exports.register = asyncHandler(async (req, res, next) => {
 exports.login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Validate email & password
   if (!email || !password) {
-    return next(new ErrorResponse("Please provide an email and password", 400));
+    return res.status(400).json({
+      success: false,
+      error: "Please provide an email and password",
+    });
   }
 
-  // Check for user
   const user = await User.findOne({ email }).select("+password");
 
-  if (!user) {
-    return next(new ErrorResponse("Invalid credentials", 401));
-  }
-
-  // Check if password matches
-  const isMatch = await user.matchPassword(password);
-
-  if (!isMatch) {
-    return next(new ErrorResponse("Invalid credentials", 401));
+  if (!user || !(await user.matchPassword(password))) {
+    return res.status(401).json({
+      success: false,
+      error: "Invalid credentials",
+    });
   }
 
   sendTokenResponse(user, 200, res);
@@ -115,7 +123,9 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // Create reset url
-  const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/auth/resetpassword/${resetToken}`;
+  const resetUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/api/v1/auth/resetpassword/${resetToken}`;
 
   const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
@@ -179,7 +189,9 @@ const sendTokenResponse = (user, statusCode, res) => {
   };
 
   const options = {
-    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
     httpOnly: true,
   };
 

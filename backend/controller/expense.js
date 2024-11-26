@@ -13,7 +13,7 @@ exports.getExpenses = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, count: expenses.length, expenses });
 });
 
-// @desc     Create  expense
+// @desc     Create expense
 // @route    POST /api/v1/expenses
 // @access   Private
 exports.createExpense = asyncHandler(async (req, res, next) => {
@@ -21,18 +21,18 @@ exports.createExpense = asyncHandler(async (req, res, next) => {
 
   // Check if category exists
   const validCategory = await Category.findById(category);
-
   if (!validCategory) {
     return res
       .status(400)
       .json({ success: false, message: "Invalid category ID" });
   }
 
-  // Create the new expense
+  // Create the new expense with user linked to authenticated user
   let expense = await Expense.create({
     category,
     description,
     amount,
+    user: req.user.id, // Ensure user is linked to authenticated user
   });
 
   // Populate category name and id
@@ -41,11 +41,6 @@ exports.createExpense = asyncHandler(async (req, res, next) => {
     "_id name"
   );
 
-  // const expense = await Expense.create({
-  //   category,
-  //   description,
-  //   amount,
-  // })
   res.status(201).send({ success: true, data: expense });
 });
 
@@ -54,8 +49,6 @@ exports.createExpense = asyncHandler(async (req, res, next) => {
 // @access   Private
 exports.getExpensesByCategory = asyncHandler(async (req, res, next) => {
   const { categoryId } = req.params;
-
-  console.log("Received category ID:", categoryId);
 
   const validCategory = await Category.findById(categoryId);
   if (!validCategory) {
@@ -68,30 +61,41 @@ exports.getExpensesByCategory = asyncHandler(async (req, res, next) => {
     "category",
     "_id name"
   );
-
   res
     .status(200)
     .json({ success: true, count: expenses.length, data: expenses });
 });
 
-// @desc     Update  expense
+// @desc     Update expense
 // @route    PUT /api/v1/expenses/:id
 // @access   Private
 exports.updateExpense = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { category, description, amount } = req.body;
 
+  // Fetch expense and populate user field
+  let expense = await Expense.findById(id).populate("user", "_id");
+
   // Check if the expense exists
-  let expense = await Expense.findById(id);
   if (!expense) {
-    return next(new ErrorResponse(`Expense with ID ${id} doesn't exist.`));
-  } else if (expense.user.toString() !== req.user.id) {
+    return next(new ErrorResponse(`Expense with ID ${id} doesn't exist.`, 404));
+  }
+
+  // Log user IDs for debugging
+  console.log("Authenticated User ID:", req.user.id);
+  console.log(
+    "Expense User ID:",
+    expense.user ? expense.user._id.toString() : "No user"
+  );
+
+  // Check if the user is authorized to update the expense
+  if (expense.user._id.toString() !== req.user.id) {
     return next(
       new ErrorResponse("Not authorized to update this expense", 401)
     );
   }
 
-  // If value is changed then update the new value else it remains unchanged.
+  // Update fields if provided in the request body
   expense.category = category || expense.category;
   expense.description = description || expense.description;
   expense.amount = amount || expense.amount;
@@ -106,8 +110,8 @@ exports.updateExpense = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, data: expense });
 });
 
-// @desc     Delete  expense
-// @route    DELETE /api/v1/expenses
+// @desc     Delete expense
+// @route    DELETE /api/v1/expenses/:id
 // @access   Private
 exports.deleteExpense = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
@@ -115,8 +119,11 @@ exports.deleteExpense = asyncHandler(async (req, res, next) => {
   // Check if the expense exists
   const expense = await Expense.findById(id);
   if (!expense) {
-    return next(new ErrorResponse(`Expense with ID ${id} doesn't exist.`));
-  } else if (expense.user.toString() !== req.user.id) {
+    return next(new ErrorResponse(`Expense with ID ${id} doesn't exist.`, 404));
+  }
+
+  // Check if the user is authorized to delete the expense
+  if (expense.user.toString() !== req.user.id) {
     return next(
       new ErrorResponse("Not authorized to delete this expense", 401)
     );
