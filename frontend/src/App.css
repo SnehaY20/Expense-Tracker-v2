@@ -1,0 +1,119 @@
+/* Global body styles */
+body {
+  font-family: "Inter";
+  font-weight: 400;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  background: linear-gradient(
+    135deg,
+    #e6cde0,
+    #f7d4e0
+  ); /* Lilac and Rose-Pink */
+  min-height: 100vh;
+}
+
+/* Background for the entire application */
+.app-container {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Header styles */
+.header-title {
+  color: #f57d7d; /* Bright Peach (Pastel shade) */
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Card styles */
+.card-container {
+  background: rgb(234, 177, 177);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  margin-bottom: 20px;
+}
+
+/* Card titles */
+.card-title {
+  text-align: center;
+  font-weight: bold;
+}
+
+.card-title.new-expense-title {
+  color: #8fbc8f; /* Dark Sea Green (Pastel shade) */
+}
+
+.card-title.expense-history-title {
+  color: #e0bbe4; /* Mauve (Pastel shade) */
+}
+
+/* Form styles */
+.form-control {
+  background-color: #f8f9fa; /* Light grey */
+  border: 1px solid #d6d6d6; /* Slightly darker grey for contrast */
+  border-radius: 5px;
+}
+
+.form-control:focus {
+  box-shadow: none;
+  border-color: #a8a8a8; /* Muted grey on focus */
+}
+
+.add-expense-button {
+  background-color: #228b22; /* Forest Green */
+  border-color: #228b22;
+  color: white;
+}
+
+.add-expense-button:hover {
+  background-color: #1e7a1e;
+  border-color: #1e7a1e;
+}
+
+/* Expense history list */
+.expense-history {
+  padding: 15px;
+}
+
+.expense-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #e9ecef; /* Light border */
+  border-radius: 8px;
+  background: #f8f9fa; /* Light grey background */
+}
+
+/* Category Badge */
+.expense-category {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  color: white;
+  background-color: #8d44b7d4; /* Lavender (Pastel shade) */
+}
+
+/* Description text */
+.expense-description {
+  font-style: normal;
+  color: #6c757d; /* Secondary grey */
+  font-weight: 500;
+}
+
+/* Expense Amount */
+.expense-amount {
+  color: #ff0000; /* Red */
+  font-weight: bold;
+}
+
+/* Expense Date */
+.expense-date {
+  font-size: 0.9rem;
+  color: #6c757d; /* Secondary grey */
+}
