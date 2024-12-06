@@ -16,32 +16,35 @@ exports.getExpenses = asyncHandler(async (req, res, next) => {
 // @desc     Create expense
 // @route    POST /api/v1/expenses
 // @access   Private
-exports.createExpense = asyncHandler(async (req, res, next) => {
-  const { category, description, amount } = req.body;
+exports.createExpense = asyncHandler(async (req, res) => {
+  const { category, amount, description, date } = req.body;
 
-  // Check if category exists
-  const validCategory = await Category.findById(category);
-  if (!validCategory) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid category ID" });
+  // Find the category by its name (can be changed to id if preferred)
+  const categoryDoc = await Category.findOne({ name: category });
+
+  if (!categoryDoc) {
+    return res.status(400).json({ message: "Category not found" });
   }
 
-  // Create the new expense with user linked to authenticated user
-  let expense = await Expense.create({
-    category,
-    description,
+  // Create a new expense document
+  const newExpense = new Expense({
+    category: categoryDoc._id, // Use the ObjectId of the category
     amount,
-    user: req.user.id, // Ensure user is linked to authenticated user
+    description,
+    date,
+    user: req.user._id, // Assuming you get the user ID from JWT
   });
 
-  // Populate category name and id
-  expense = await Expense.findById(expense._id).populate(
+  // Save the expense to the database
+  await newExpense.save();
+
+  // Optionally, populate the category (if you want to include the category info in the response)
+  const populatedExpense = await Expense.findById(newExpense._id).populate(
     "category",
     "_id name"
   );
 
-  res.status(201).send({ success: true, data: expense });
+  res.status(201).json(populatedExpense); // Send the populated expense as the response
 });
 
 // @desc     GET expenses by category

@@ -1,21 +1,23 @@
-import React from "react";
-
-const Category = ({ selectedCategory, onCategoryChange }) => {
-  return (
-    <div>
-      <label>Category</label>
-      <select value={selectedCategory} onChange={onCategoryChange}>
-        <option value="food">Food</option>
-        <option value="travel">Travelling</option>
-        <option value="shopping">Shopping</option>
-        <option value="entertainment">Entertainment</option>
-        <option value="healthcare">Healthcare</option>
-        <option value="skincare">Skincare</option>
-        <option value="groceries">Groceries</option>
-        <option value="other">Other</option>
-      </select>
-    </div>
-  );
-};
-
-export default Category;
+const mongoose = require("mongoose");
+const CategorySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    enum: [
+      "Food",
+      "Transport",
+      "Utilities",
+      "Entertainment",
+      "Healthcare",
+      "Skincare",
+      "Groceries",
+      "Other",
+    ],
+    required: [true, "Select category"],
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+});
+module.exports = mongoose.model("Category", CategorySchema);

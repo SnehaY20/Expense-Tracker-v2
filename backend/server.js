@@ -3,6 +3,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const logger = require("./middleware/logger.js");
 const error = require("./middleware/error.js");
+const cors = require("cors");
 const connectDB = require("./config/db.js");
 
 // Load env variables
@@ -16,6 +17,8 @@ const app = express();
 
 // Body parser
 app.use(express.json());
+
+app.use(cors());
 
 // Import route files
 const expense = require("./routes/expense.js");

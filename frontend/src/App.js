@@ -1,13 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ExpenseForm from "./components/ExpenseForm";
-import ExpenseHistory from "./components/ExpenseHistory";
-import "./App.css"; // Import the styles
+import Register from "./components/Register";
+import Login from "./components/Login";
+import "./App.css";
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentView, setCurrentView] = useState("login"); // Default view is login
   const [expenses, setExpenses] = useState([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleAuthentication = () => {
+    setIsAuthenticated(true);
+    setCurrentView("expenseForm");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+    setCurrentView("login");
+  };
 
   const addExpense = (newExpense) => {
     setExpenses([...expenses, newExpense]);
+  };
+
+  const renderContent = () => {
+    if (currentView === "login") {
+      return (
+        <Login onLogin={handleAuthentication} setCurrentView={setCurrentView} />
+      );
+    }
+    if (currentView === "register") {
+      return <Register onRegister={() => setCurrentView("login")} />;
+    }
+    if (currentView === "expenseForm") {
+      return (
+        <ExpenseForm
+          addExpense={addExpense}
+          isAuthenticated={isAuthenticated}
+          handleLogout={handleLogout}
+        />
+      );
+    }
   };
 
   return (
@@ -15,10 +56,7 @@ function App() {
       <header className="header-title">
         <h1>Expense Tracker</h1>
       </header>
-      <main>
-        <ExpenseForm addExpense={addExpense} />
-        <ExpenseHistory expenses={expenses} />
-      </main>
+      <main>{renderContent()}</main>
     </div>
   );
 }
