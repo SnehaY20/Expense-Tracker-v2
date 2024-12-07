@@ -2,16 +2,6 @@ const mongoose = require("mongoose");
 const CategorySchema = new mongoose.Schema({
   name: {
     type: String,
-    enum: [
-      "Food",
-      "Transport",
-      "Utilities",
-      "Entertainment",
-      "Healthcare",
-      "Skincare",
-      "Groceries",
-      "Other",
-    ],
     required: [true, "Select category"],
   },
   user: {

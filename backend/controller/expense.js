@@ -17,7 +17,7 @@ exports.getExpenses = asyncHandler(async (req, res, next) => {
 // @route    POST /api/v1/expenses
 // @access   Private
 exports.createExpense = asyncHandler(async (req, res) => {
-  const { category, amount, description, date } = req.body;
+  const { category, amount, name, date } = req.body;
 
   // Find the category by its name (can be changed to id if preferred)
   const categoryDoc = await Category.findOne({ name: category });
@@ -30,7 +30,7 @@ exports.createExpense = asyncHandler(async (req, res) => {
   const newExpense = new Expense({
     category: categoryDoc._id, // Use the ObjectId of the category
     amount,
-    description,
+    name,
     date,
     user: req.user._id, // Assuming you get the user ID from JWT
   });
@@ -74,7 +74,7 @@ exports.getExpensesByCategory = asyncHandler(async (req, res, next) => {
 // @access   Private
 exports.updateExpense = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const { category, description, amount } = req.body;
+  const { category, name, amount } = req.body;
 
   // Fetch expense and populate user field
   let expense = await Expense.findById(id).populate("user", "_id");
@@ -100,7 +100,7 @@ exports.updateExpense = asyncHandler(async (req, res, next) => {
 
   // Update fields if provided in the request body
   expense.category = category || expense.category;
-  expense.description = description || expense.description;
+  expense.name = name || expense.name;
   expense.amount = amount || expense.amount;
 
   // Save the updated expense

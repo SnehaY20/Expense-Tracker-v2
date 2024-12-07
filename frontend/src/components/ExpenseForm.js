@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Button, Card, Container } from "react-bootstrap";
 import axios from "axios";
-import "../App.css"; // Import the styles
+import "../App.css";
 
 const ExpenseForm = ({
   addExpense,
@@ -9,11 +9,35 @@ const ExpenseForm = ({
   handleLogout,
   setCurrentView,
 }) => {
+  const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:5000/api/v1/categories",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Pass token for authentication
+            },
+          }
+        );
+        console.log(response.data);
+        setCategories(response.data.categories || []);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+        setError("Failed to load categories. Please try again later.");
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const getCurrentDateAndDay = () => {
     const today = new Date();
@@ -28,7 +52,7 @@ const ExpenseForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!category || !amount || !description) {
+    if (!category || !amount || !name) {
       setError("Please fill in all fields before adding an expense!");
       setSuccess("");
       return;
@@ -37,26 +61,26 @@ const ExpenseForm = ({
     const newExpense = {
       category,
       amount: parseFloat(amount),
-      description,
+      name,
       date: getCurrentDateAndDay(),
     };
 
     try {
-      const token = localStorage.getItem("token"); // Assuming you save the JWT token in localStorage after login
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         "http://localhost:5000/api/v1/expenses",
         newExpense,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Pass token for authentication
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      addExpense(response.data); // Update local state with new expense
+      addExpense(response.data);
       setCategory("");
       setAmount("");
-      setDescription("");
+      setName("");
       setError("");
       setSuccess("Expense added successfully!");
     } catch (err) {
@@ -86,14 +110,11 @@ const ExpenseForm = ({
                 <option value="" disabled>
                   Select Category
                 </option>
-                <option value="Food">Food</option>
-                <option value="Travelling">Travelling</option>
-                <option value="Shopping">Shopping</option>
-                <option value="Entertainment">Entertainment</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="Skincare">Skincare</option>
-                <option value="Groceries">Groceries</option>
-                <option value="Other">Other</option>
+                {categories.map((cat) => (
+                  <option key={cat._id || cat.name} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
@@ -107,12 +128,12 @@ const ExpenseForm = ({
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
+              <Form.Label>Name</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Enter description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Enter name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="form-control"
               />
             </Form.Group>

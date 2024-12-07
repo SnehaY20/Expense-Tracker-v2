@@ -9,10 +9,12 @@ function App() {
   const [currentView, setCurrentView] = useState("login"); // Default view is login
   const [expenses, setExpenses] = useState([]);
 
+  // Check for token on app load
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       setIsAuthenticated(true);
+      setCurrentView("expenseForm"); // Automatically show ExpenseForm if authenticated
     }
   }, []);
 
@@ -46,6 +48,7 @@ function App() {
           addExpense={addExpense}
           isAuthenticated={isAuthenticated}
           handleLogout={handleLogout}
+          setCurrentView={setCurrentView}
         />
       );
     }
