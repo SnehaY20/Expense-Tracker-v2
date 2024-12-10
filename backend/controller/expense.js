@@ -10,7 +10,9 @@ const asyncHandler = require("../middleware/async.js");
 // @access   Private
 exports.getExpenses = asyncHandler(async (req, res, next) => {
   const expenses = await Expense.find().populate("category");
-  res.status(200).json({ success: true, count: expenses.length, expenses });
+  res
+    .status(200)
+    .json({ success: true, count: expenses.length, data: expenses });
 });
 
 // @desc     Create expense
@@ -28,23 +30,21 @@ exports.createExpense = asyncHandler(async (req, res) => {
 
   // Create a new expense document
   const newExpense = new Expense({
-    category: categoryDoc._id, // Use the ObjectId of the category
+    category: categoryDoc._id,
     amount,
     name,
     date,
-    user: req.user._id, // Assuming you get the user ID from JWT
+    user: req.user._id,
   });
 
-  // Save the expense to the database
   await newExpense.save();
 
-  // Optionally, populate the category (if you want to include the category info in the response)
   const populatedExpense = await Expense.findById(newExpense._id).populate(
     "category",
     "_id name"
   );
 
-  res.status(201).json(populatedExpense); // Send the populated expense as the response
+  res.status(201).json(populatedExpense);
 });
 
 // @desc     GET expenses by category
