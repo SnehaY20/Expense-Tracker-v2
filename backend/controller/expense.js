@@ -19,10 +19,10 @@ exports.getExpenses = asyncHandler(async (req, res, next) => {
 // @route    POST /api/v1/expenses
 // @access   Private
 exports.createExpense = asyncHandler(async (req, res) => {
-  const { category, amount, name, date } = req.body;
+  const { category, amount, name, date, note } = req.body;
 
   // Find the category by its name (can be changed to id if preferred)
-  const categoryDoc = await Category.findOne({ name: category });
+  const categoryDoc = await Category.findById(category);
 
   if (!categoryDoc) {
     return res.status(400).json({ message: "Category not found" });
@@ -35,6 +35,7 @@ exports.createExpense = asyncHandler(async (req, res) => {
     name,
     date,
     user: req.user._id,
+    note,
   });
 
   await newExpense.save();
@@ -74,7 +75,7 @@ exports.getExpensesByCategory = asyncHandler(async (req, res, next) => {
 // @access   Private
 exports.updateExpense = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const { category, name, amount } = req.body;
+  const { category, name, amount, note } = req.body;
 
   // Fetch expense and populate user field
   let expense = await Expense.findById(id).populate("user", "_id");
@@ -102,6 +103,7 @@ exports.updateExpense = asyncHandler(async (req, res, next) => {
   expense.category = category || expense.category;
   expense.name = name || expense.name;
   expense.amount = amount || expense.amount;
+  expense.note = note || expense.note;
 
   // Save the updated expense
   await expense.save();
